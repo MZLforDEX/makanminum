@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Water droplet silhouette on left/center in crisp white -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,24 C48,24 30,45 30,60 C30,70 38,78 48,78 C58,78 66,70 66,60 C66,45 48,24 48,24 Z" />
+    <!-- Warm orange nutrition bowl/sun accent badge overlapping bottom-right -->
+    <path
+        android:fillColor="#FB923C"
+        android:pathData="M52,58 L80,58 C80,71 72,80 66,80 C60,80 52,71 52,58 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,54 C42,54 39,57 39,61 C39,65 42,68 45,68 C46,68 46,66 45,66 C43,66 41,64 41,61 C41,58 43,56 45,56 Z" />
+</vector>

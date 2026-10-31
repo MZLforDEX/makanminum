@@ -1,0 +1,6 @@
+{
+  "name": "MakanMinum",
+  "description": "Aplikasi Android ringan, offline, dan tanpa akun untuk pengingat jadwal makan serta pencatat target minum air harian.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

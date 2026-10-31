@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MakanMinum</string>
+    <string name="tab_home">Beranda</string>
+    <string name="tab_meals">Makan</string>
+    <string name="tab_history">Riwayat</string>
+    <string name="tab_settings">Pengaturan</string>
+    <string name="action_already_ate">Sudah makan</string>
+    <string name="action_drink_250">Minum 250 ml</string>
+    <string name="action_snooze_10">Tunda 10 menit</string>
+    <string name="medical_disclaimer">Target minum dihitung sebagai perkiraan umum (30–35 ml × kg berat badan) dan bukan merupakan saran medis.</string>
+</resources>
