@@ -135,6 +135,7 @@ class ExampleRobolectricTest {
         val expectedNotifId = NotificationHelper.mealNotificationId(sampleMeal.id)
         val postedNotification = shadowNotificationManager.getNotification(expectedNotifId)
         assertNotNull(postedNotification)
+        assertNotNull(postedNotification.fullScreenIntent)
         assertEquals(2, postedNotification.actions.size)
         assertEquals("Sudah makan", postedNotification.actions[0].title.toString())
         assertEquals("Tunda 10 menit", postedNotification.actions[1].title.toString())

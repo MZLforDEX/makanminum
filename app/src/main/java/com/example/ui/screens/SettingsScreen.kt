@@ -585,11 +585,11 @@ fun SettingsScreen(
                         HorizontalDivider()
 
                         Text(
-                            text = "Uji Notifikasi Interaktif Sekarang",
+                            text = "Uji Layar Alarm & Dering Sekarang",
                             style = MaterialTheme.typography.labelLarge
                         )
                         Text(
-                            text = "Coba tampilkan notifikasi untuk menguji tombol 'Minum 250 ml', 'Sudah makan', dan 'Tunda 10 menit'.",
+                            text = "Coba bunyikan alarm layar penuh beserta tombol 'Minum 250 ml', 'Sudah makan', dan 'Tunda 10 menit'.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -605,7 +605,7 @@ fun SettingsScreen(
                                     .testTag("test_water_notification_button"),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Uji Notif Minum")
+                                Text("Uji Alarm Minum")
                             }
                             OutlinedButton(
                                 onClick = onTestMealNotification,
@@ -614,7 +614,7 @@ fun SettingsScreen(
                                     .testTag("test_meal_notification_button"),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Uji Notif Makan")
+                                Text("Uji Alarm Makan")
                             }
                         }
                     }

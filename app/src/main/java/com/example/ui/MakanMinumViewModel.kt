@@ -329,25 +329,17 @@ class MakanMinumViewModel(
     fun sendTestWaterNotification() {
         val state = uiState.value
         val appContext = getApplication<Application>()
-        if (!NotificationHelper.hasNotificationPermission(appContext)) {
-            snackbarMessageFlow.value = "Aktifkan izin notifikasi terlebih dahulu"
-            return
-        }
         NotificationHelper.showWaterNotification(
             context = appContext,
             currentMl = state.todayTotalMl,
-            targetMl = state.settings.targetMl
+            targetMl = state.settings.targetMl,
+            launchAlarmScreen = true
         )
-        snackbarMessageFlow.value = "Notifikasi uji pengingat minum dikirim"
     }
 
     fun sendTestMealNotification(specificMeal: MealReminderEntity? = null) {
         val state = uiState.value
         val appContext = getApplication<Application>()
-        if (!NotificationHelper.hasNotificationPermission(appContext)) {
-            snackbarMessageFlow.value = "Aktifkan izin notifikasi terlebih dahulu"
-            return
-        }
         val sampleMeal = specificMeal ?: state.meals.firstOrNull() ?: MealReminderEntity(
             id = 1L,
             nama = "Makan Siang",
@@ -358,9 +350,9 @@ class MakanMinumViewModel(
             context = appContext,
             mealId = sampleMeal.id,
             mealName = sampleMeal.nama,
-            mealTimeFormatted = sampleMeal.formattedTime()
+            mealTimeFormatted = sampleMeal.formattedTime(),
+            launchAlarmScreen = true
         )
-        snackbarMessageFlow.value = "Notifikasi pengingat \"${sampleMeal.nama}\" dikirim"
     }
 
     fun clearSnackbar() {
