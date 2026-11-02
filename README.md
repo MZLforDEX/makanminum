@@ -6,12 +6,13 @@ Aplikasi Android ringan, sepenuhnya **offline**, dan **tanpa akun** yang membant
 
 ## Paket Instalasi (.APK)
 
-- **Lokasi File APK di Repositori**: [`releases/MakanMinum-v1.0.apk`](releases/MakanMinum-v1.0.apk)
+- **Versi Rilis**: `v1.0.01` (`versionCode = 2`)
+- **Lokasi File APK di Repositori**: [`releases/MakanMinum-v1.0.01.apk`](releases/MakanMinum-v1.0.01.apk)
 - **Ukuran & Kompatibilitas**: Ringan, mendukung Android 7.0+ / Android 8.0+ hingga versi Android terbaru.
 
 ---
 
-## Fitur Utama (Sesuai PRD v1.0)
+## Fitur Utama (v1.0.01)
 
 1. **Pengingat Makan Tepat Waktu (`AlarmManager` + `NotificationManager`)**:
    - Menyediakan 3 jadwal makan bawaan (**Sarapan 07:00**, **Makan Siang 12:00**, **Makan Malam 19:00**) yang dapat diubah, dinonaktifkan, atau dihapus.
@@ -35,7 +36,7 @@ Aplikasi Android ringan, sepenuhnya **offline**, dan **tanpa akun** yang membant
 ## Teknologi & Arsitektur
 
 - **Bahasa**: Kotlin
-- **Antarmuka (UI)**: Jetpack Compose + Material Design 3 (Tema Biru Segar & Oranye Hangat, Font Lokal *Plus Jakarta Sans*)
+- **Antarmuka (UI)**: Jetpack Compose + Material Design 3 (Tema Biru Segar & Putih Abu-abu, Font Lokal *Plus Jakarta Sans*)
 - **Arsitektur**: MVVM (`ViewModel` + `StateFlow` + `Repository`)
 - **Penyimpanan Lokal**: Room Database (`MealReminderEntity`, `WaterLogEntity`) & Jetpack Preferences DataStore (`UserSettings`)
 - **Sistem Pengingat**: `AlarmManager` (`setExactAndAllowWhileIdle` dengan *fallback* aman) + `BroadcastReceiver` + `NotificationManager`

@@ -13,7 +13,7 @@ import android.os.VibratorManager
 
 /**
  * Mengelola dering suara alarm (USAGE_ALARM) dan getaran berulang saat waktu pengingat
- * makan atau minum tiba, serta menghentikannya saat pengguna merespons.
+ * makan tiba, serta menghentikannya saat pengguna merespons.
  */
 object AlarmRingingController {
     private val lock = Any()

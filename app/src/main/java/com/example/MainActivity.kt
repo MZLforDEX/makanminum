@@ -91,10 +91,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -149,7 +145,6 @@ fun MakanMinumApp(
         return
     }
 
-    // BackHandler pada tab sekunder agar kembali ke Beranda terlebih dahulu
     BackHandler(enabled = currentTab != MakanMinumTab.BERANDA) {
         currentTab = MakanMinumTab.BERANDA
     }

@@ -71,7 +71,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Layar Alarm Penuh (Full-Screen Alarm) yang menyala di atas layar kunci (lockscreen)
- * disertai dering alarm & getaran ketika waktu makan atau minum tiba.
+ * disertai dering alarm & getaran ketika waktu makan tiba.
  */
 class AlarmRingingActivity : ComponentActivity() {
 
@@ -80,7 +80,6 @@ class AlarmRingingActivity : ComponentActivity() {
         configureLockScreenAndWakeFlags()
         enableEdgeToEdge()
 
-        // Pastikan dering alarm & getaran berjalan saat layar alarm tampil
         AlarmRingingController.startRinging(this)
 
         renderFromIntent(intent)
@@ -91,10 +90,6 @@ class AlarmRingingActivity : ComponentActivity() {
         setIntent(intent)
         AlarmRingingController.startRinging(this)
         renderFromIntent(intent)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     private fun configureLockScreenAndWakeFlags() {
@@ -290,7 +285,6 @@ fun AlarmRingingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Badge Alarm Berdering
             Surface(
                 shape = RoundedCornerShape(50),
                 color = containerColor
@@ -315,7 +309,6 @@ fun AlarmRingingScreen(
                 }
             }
 
-            // Jam Besar
             Text(
                 text = timeText,
                 style = MaterialTheme.typography.displayLarge,
@@ -324,7 +317,6 @@ fun AlarmRingingScreen(
                 modifier = Modifier.testTag("alarm_time_text")
             )
 
-            // Lingkaran Ikon Berdenyut (Pulsing Alarm Ring)
             Box(
                 modifier = Modifier.size(150.dp),
                 contentAlignment = Alignment.Center
@@ -360,7 +352,6 @@ fun AlarmRingingScreen(
                 }
             }
 
-            // Judul & Pesan Pengingat
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -394,7 +385,6 @@ fun AlarmRingingScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Tombol Aksi Utama (Sudah Makan / Minum 250 ml)
             Button(
                 onClick = onPrimaryAction,
                 colors = ButtonDefaults.buttonColors(
@@ -420,7 +410,6 @@ fun AlarmRingingScreen(
                 )
             }
 
-            // Tombol Tunda 10 Menit (Snooze)
             OutlinedButton(
                 onClick = onSnooze10Minutes,
                 shape = RoundedCornerShape(18.dp),
@@ -437,7 +426,6 @@ fun AlarmRingingScreen(
                 )
             }
 
-            // Tombol Matikan Alarm Saja
             TextButton(
                 onClick = onDismissAlarmOnly,
                 modifier = Modifier.testTag("alarm_dismiss_button")

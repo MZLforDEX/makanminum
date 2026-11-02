@@ -145,10 +145,16 @@ class ExampleRobolectricTest {
         ReminderScheduler.cancelMealAlarm(context, sampleMeal.id)
         assertTrue(shadowAlarmManager.scheduledAlarms.isEmpty())
 
-        // 4. Verifikasi penjadwalan dan pembatalan alarm minum
+        // 4. Verifikasi penjadwalan dan notifikasi minum (hanya notifikasi biasa tanpa fullScreenIntent)
         val settings = UserSettings(pengingatMinumAktif = true, targetMl = 2000)
         ReminderScheduler.scheduleWaterAlarm(context, settings, todayTotalMl = 500)
         assertTrue(shadowAlarmManager.scheduledAlarms.isNotEmpty())
+
+        NotificationHelper.showWaterNotification(context, currentMl = 500, targetMl = 2000)
+        val waterNotification = shadowNotificationManager.getNotification(NotificationHelper.WATER_NOTIFICATION_ID)
+        assertNotNull(waterNotification)
+        org.junit.Assert.assertNull(waterNotification.fullScreenIntent)
+        assertEquals("Minum 250 ml", waterNotification.actions[0].title.toString())
 
         ReminderScheduler.cancelWaterAlarm(context)
         assertTrue(shadowAlarmManager.scheduledAlarms.isEmpty())

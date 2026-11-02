@@ -12,12 +12,13 @@ import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.example.MainActivity
 import com.example.R
 import com.example.ui.AlarmRingingActivity
 
 object NotificationHelper {
     const val CHANNEL_MEAL = "meal_alarm_channel_v2"
-    const val CHANNEL_WATER = "water_alarm_channel_v2"
+    const val CHANNEL_WATER = "water_reminder_channel_v3"
 
     const val WATER_NOTIFICATION_ID = 2001
     private const val MEAL_NOTIFICATION_BASE_ID = 1000
@@ -44,15 +45,14 @@ object NotificationHelper {
                 lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
             }
 
+            // Saluran khusus Pengingat Minum: berupa notifikasi biasa (bukan alarm berdering)
             val waterChannel = NotificationChannel(
                 CHANNEL_WATER,
-                "Alarm Pengingat Minum",
+                "Notifikasi Pengingat Minum",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Alarm & peringatan minum air putih berkala antara jam bangun dan tidur"
+                description = "Notifikasi pengingat minum air putih berkala antara jam bangun dan tidur"
                 enableVibration(true)
-                vibrationPattern = longArrayOf(0L, 500L, 300L, 500L, 600L)
-                setSound(alarmSoundUri, alarmAudioAttrs)
                 lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
             }
 
@@ -79,6 +79,9 @@ object NotificationHelper {
 
     fun mealNotificationId(mealId: Long): Int = MEAL_NOTIFICATION_BASE_ID + (mealId.toInt() and 0x7FFF)
 
+    /**
+     * Menampilkan Pengingat Makan berupa Alarm Penuh (layar alarm + dering alarm + notifikasi).
+     */
     fun showMealNotification(
         context: Context,
         mealId: Long,
@@ -89,7 +92,7 @@ object NotificationHelper {
         ensureChannelsCreated(context)
         val notificationId = mealNotificationId(mealId)
 
-        // Mulai dering alarm & getaran
+        // Mulai dering alarm & getaran khusus untuk pengingat makan
         AlarmRingingController.startRinging(context)
 
         val alarmScreenIntent = AlarmRingingActivity.createIntent(
@@ -183,41 +186,27 @@ object NotificationHelper {
         }
     }
 
+    /**
+     * Menampilkan Pengingat Minum berupa Notifikasi biasa (tanpa layar alarm penuh dan tanpa dering alarm berulang).
+     */
     fun showWaterNotification(
         context: Context,
         currentMl: Int,
-        targetMl: Int,
-        launchAlarmScreen: Boolean = true
+        targetMl: Int
     ) {
         ensureChannelsCreated(context)
-
-        // Mulai dering alarm & getaran
-        AlarmRingingController.startRinging(context)
-
-        val alarmScreenIntent = AlarmRingingActivity.createIntent(
-            context = context,
-            alarmType = ReminderScheduler.TYPE_WATER,
-            mealName = "Minum Air Putih",
-            waterCurrentMl = currentMl,
-            waterTargetMl = targetMl,
-            notificationId = WATER_NOTIFICATION_ID
-        )
-
-        if (launchAlarmScreen) {
-            runCatching {
-                context.startActivity(alarmScreenIntent)
-            }
-        }
-
         if (!hasNotificationPermission(context)) return
 
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val fullScreenPendingIntent = PendingIntent.getActivity(
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val contentPendingIntent = PendingIntent.getActivity(
             context,
             WATER_NOTIFICATION_ID,
-            alarmScreenIntent,
+            openAppIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -250,23 +239,19 @@ object NotificationHelper {
             "Progres hari ini: $currentMl / $targetMl ml. Tetap terhidrasi dengan baik!"
         }
 
-        val alarmSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val defaultNotifSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_WATER)
             .setSmallIcon(R.drawable.ic_notification_water)
             .setContentTitle("Waktunya Minum Air Putih!")
             .setContentText(bodyText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setSound(alarmSoundUri)
-            .setVibrate(longArrayOf(0L, 500L, 300L, 500L, 600L))
-            .setOngoing(true)
+            .setSound(defaultNotifSound)
             .setAutoCancel(true)
-            .setContentIntent(fullScreenPendingIntent)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
+            .setContentIntent(contentPendingIntent)
             .addAction(
                 R.drawable.ic_notification_water,
                 context.getString(R.string.action_drink_250),
@@ -285,7 +270,9 @@ object NotificationHelper {
     }
 
     fun dismissNotification(context: Context, notificationId: Int) {
-        AlarmRingingController.stopRinging(context)
+        if (notificationId != WATER_NOTIFICATION_ID) {
+            AlarmRingingController.stopRinging(context)
+        }
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(notificationId)

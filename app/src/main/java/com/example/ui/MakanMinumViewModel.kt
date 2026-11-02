@@ -16,8 +16,8 @@ import com.example.data.UserSettings
 import com.example.data.WaterLogEntity
 import com.example.reminder.NotificationHelper
 import com.example.reminder.ReminderScheduler
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -68,7 +68,6 @@ class MakanMinumViewModel(
             repository.ensureDefaultMealsSeededAndSyncAlarms()
             isInitializedFlow.value = true
         }
-        // Ticker berkala agar pergantian hari (00:00) dan hitung mundur jadwal makan selalu akurat
         viewModelScope.launch {
             while (true) {
                 delay(30_000L)
@@ -329,12 +328,16 @@ class MakanMinumViewModel(
     fun sendTestWaterNotification() {
         val state = uiState.value
         val appContext = getApplication<Application>()
+        if (!NotificationHelper.hasNotificationPermission(appContext)) {
+            snackbarMessageFlow.value = "Aktifkan izin notifikasi terlebih dahulu"
+            return
+        }
         NotificationHelper.showWaterNotification(
             context = appContext,
             currentMl = state.todayTotalMl,
-            targetMl = state.settings.targetMl,
-            launchAlarmScreen = true
+            targetMl = state.settings.targetMl
         )
+        snackbarMessageFlow.value = "Notifikasi pengingat minum dikirim"
     }
 
     fun sendTestMealNotification(specificMeal: MealReminderEntity? = null) {

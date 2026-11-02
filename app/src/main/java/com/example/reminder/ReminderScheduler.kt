@@ -66,7 +66,7 @@ object ReminderScheduler {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        setExactOrFallbackAlarm(context, nextTriggerMillis, pendingIntent)
+        setExactOrFallbackAlarm(context, nextTriggerMillis, pendingIntent, useAlarmClock = true)
     }
 
     fun cancelMealAlarm(context: Context, mealId: Long) {
@@ -102,7 +102,7 @@ object ReminderScheduler {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        setExactOrFallbackAlarm(context, triggerAtMillis, pendingIntent)
+        setExactOrFallbackAlarm(context, triggerAtMillis, pendingIntent, useAlarmClock = true)
     }
 
     fun scheduleWaterAlarm(
@@ -116,7 +116,6 @@ object ReminderScheduler {
             return
         }
 
-        // Jika target hari ini sudah tercapai dan stopSetelahTarget aktif, batalkan snooze hari ini bila ada
         if (settings.stopSetelahTarget && settings.targetMl > 0 && todayTotalMl >= settings.targetMl) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
             if (alarmManager != null) {
@@ -145,7 +144,7 @@ object ReminderScheduler {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        setExactOrFallbackAlarm(context, nextTriggerMillis, pendingIntent)
+        setExactOrFallbackAlarm(context, nextTriggerMillis, pendingIntent, useAlarmClock = false)
     }
 
     fun scheduleSnoozeWaterAlarm(
@@ -164,7 +163,7 @@ object ReminderScheduler {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        setExactOrFallbackAlarm(context, triggerAtMillis, pendingIntent)
+        setExactOrFallbackAlarm(context, triggerAtMillis, pendingIntent, useAlarmClock = false)
     }
 
     fun cancelWaterAlarm(context: Context) {
@@ -195,22 +194,31 @@ object ReminderScheduler {
     private fun setExactOrFallbackAlarm(
         context: Context,
         triggerAtMillis: Long,
-        pendingIntent: PendingIntent
+        pendingIntent: PendingIntent,
+        useAlarmClock: Boolean
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
         try {
             if (canScheduleExactAlarms(context)) {
-                val showAppIntent = Intent(context, com.example.MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                if (useAlarmClock) {
+                    val showAppIntent = Intent(context, com.example.MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    }
+                    val showAppPendingIntent = PendingIntent.getActivity(
+                        context,
+                        0,
+                        showAppIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerAtMillis, showAppPendingIntent)
+                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                } else {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerAtMillis,
+                        pendingIntent
+                    )
                 }
-                val showAppPendingIntent = PendingIntent.getActivity(
-                    context,
-                    0,
-                    showAppIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerAtMillis, showAppPendingIntent)
-                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
             } else {
                 alarmManager.setAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
@@ -219,7 +227,6 @@ object ReminderScheduler {
                 )
             }
         } catch (_: SecurityException) {
-            // Fallback ke alarm tidak tepat bila izin dicabut tiba-tiba
             runCatching {
                 alarmManager.setAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,

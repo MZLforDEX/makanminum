@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.BuildConfig
 import com.example.R
 import com.example.data.DateTimeUtils
 import com.example.data.ThemeMode
@@ -585,11 +586,11 @@ fun SettingsScreen(
                         HorizontalDivider()
 
                         Text(
-                            text = "Uji Layar Alarm & Dering Sekarang",
+                            text = "Uji Notifikasi Minum & Alarm Makan",
                             style = MaterialTheme.typography.labelLarge
                         )
                         Text(
-                            text = "Coba bunyikan alarm layar penuh beserta tombol 'Minum 250 ml', 'Sudah makan', dan 'Tunda 10 menit'.",
+                            text = "Pengingat minum tampil sebagai notifikasi ('Minum 250 ml' / 'Tunda 10 menit'), sedangkan pengingat makan muncul sebagai alarm penuh.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -605,7 +606,7 @@ fun SettingsScreen(
                                     .testTag("test_water_notification_button"),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Uji Alarm Minum")
+                                Text("Uji Notif Minum")
                             }
                             OutlinedButton(
                                 onClick = onTestMealNotification,
@@ -618,6 +619,22 @@ fun SettingsScreen(
                             }
                         }
                     }
+                }
+            }
+
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "MakanMinum v${BuildConfig.VERSION_NAME}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.testTag("app_version_text")
+                    )
                 }
             }
         }
