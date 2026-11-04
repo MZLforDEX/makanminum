@@ -16,11 +16,17 @@ class AlarmTriggerReceiver : BroadcastReceiver() {
         val alarmType = intent.getStringExtra(ReminderScheduler.EXTRA_ALARM_TYPE) ?: return
         val isSnooze = intent.getBooleanExtra(ReminderScheduler.EXTRA_IS_SNOOZE, false)
         val pendingResult = goAsync()
+        val appContext = context.applicationContext
+        val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+        val wakeLock = powerManager?.newWakeLock(
+            android.os.PowerManager.PARTIAL_WAKE_LOCK,
+            "makanminum:alarm_trigger_receiver"
+        )
+        wakeLock?.acquire(10_000L)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 runCatching {
-                    val appContext = context.applicationContext
                     val db = MakanMinumDatabase.getInstance(appContext)
                     val prefs = UserPreferencesDataStore(appContext)
                     val nowMillis = System.currentTimeMillis()
@@ -100,6 +106,11 @@ class AlarmTriggerReceiver : BroadcastReceiver() {
                     }
                 }
             } finally {
+                runCatching {
+                    if (wakeLock?.isHeld == true) {
+                        wakeLock.release()
+                    }
+                }
                 pendingResult.finish()
             }
         }

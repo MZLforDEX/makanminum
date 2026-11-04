@@ -80,16 +80,28 @@ class AlarmRingingActivity : ComponentActivity() {
         configureLockScreenAndWakeFlags()
         enableEdgeToEdge()
 
-        AlarmRingingController.startRinging(this)
-
         renderFromIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        AlarmRingingController.startRinging(this)
         renderFromIntent(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        AlarmRingingController.onAlarmActivityResumed()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        AlarmRingingController.onAlarmActivityPaused()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        AlarmRingingController.onAlarmActivityPaused()
     }
 
     private fun configureLockScreenAndWakeFlags() {
@@ -126,6 +138,17 @@ class AlarmRingingActivity : ComponentActivity() {
                 NotificationHelper.mealNotificationId(mealId)
             }
         ) ?: NotificationHelper.WATER_NOTIFICATION_ID
+
+        AlarmRingingController.startRinging(
+            context = this,
+            alarmInfo = com.example.reminder.ActiveAlarmInfo(
+                alarmType = alarmType,
+                mealId = mealId,
+                mealName = mealName,
+                mealTimeFormatted = mealTime,
+                notificationId = notificationId
+            )
+        )
 
         setContent {
             MakanMinumTheme {
@@ -215,7 +238,8 @@ class AlarmRingingActivity : ComponentActivity() {
             return Intent(context, AlarmRingingActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_NO_USER_ACTION
                 putExtra(EXTRA_ALARM_TYPE, alarmType)
                 putExtra(EXTRA_MEAL_ID, mealId)
                 putExtra(EXTRA_MEAL_NAME, mealName)

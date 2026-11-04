@@ -3,6 +3,10 @@ package com.example
 import com.example.data.DateTimeUtils
 import com.example.data.MealReminderEntity
 import com.example.data.UserSettings
+import com.example.data.WaterLogEntity
+import com.example.reminder.NotificationHelper
+import com.example.reminder.ReminderScheduler
+import com.example.util.BrandCompatibilityHelper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -107,5 +111,51 @@ class ExampleUnitTest {
         // Jika tidak ada hari aktif yang dipilih (0), computeNextMealTriggerMillis harus null
         val noDayMeal = meal.copy(hariAktif = 0)
         assertNull(DateTimeUtils.computeNextMealTriggerMillis(noDayMeal))
+    }
+
+    @Test
+    fun brandCompatibilityHelper_providesValidTipsForSupportedBrands() {
+        val tips = BrandCompatibilityHelper.getCompatibilityTips()
+        assertTrue(tips.isNotEmpty())
+        assertTrue(tips.size >= 3)
+
+        val brandLabel = BrandCompatibilityHelper.getBrandNameLabel()
+        assertTrue(brandLabel.isNotEmpty())
+
+        val deviceDisplay = BrandCompatibilityHelper.getDeviceDisplayName()
+        assertTrue(deviceDisplay.isNotEmpty())
+    }
+
+    @Test
+    fun notificationHelper_constantsAndIdsAreValid() {
+        assertEquals("meal_alarm_channel_v3", NotificationHelper.CHANNEL_MEAL)
+        assertEquals("water_reminder_channel_v3", NotificationHelper.CHANNEL_WATER)
+        assertEquals(2001, NotificationHelper.WATER_NOTIFICATION_ID)
+
+        val meal10NotifId = NotificationHelper.mealNotificationId(10L)
+        assertEquals(1010, meal10NotifId)
+    }
+
+    @Test
+    fun waterLogEntity_andUserSettings_modelPropertiesWorkCorrectly() {
+        val entity = WaterLogEntity(
+            id = 100L,
+            tanggal = "2026-11-03",
+            waktu = 1700000000000L,
+            jumlahMl = 250
+        )
+        assertEquals(250, entity.jumlahMl)
+        assertEquals("2026-11-03", entity.tanggal)
+
+        val settings = UserSettings(
+            beratBadanKg = 65,
+            targetMl = 2150,
+            jamBangunMenit = 7 * 60,
+            jamTidurMenit = 23 * 60,
+            intervalMenit = 90
+        )
+        assertEquals(65, settings.beratBadanKg)
+        assertEquals(2150, settings.targetMl)
+        assertFalse(settings.isMealDoneToday(1L, "2026-11-03"))
     }
 }

@@ -59,6 +59,11 @@ class NotificationActionReceiver : BroadcastReceiver() {
                         )
                         NotificationHelper.dismissNotification(appContext, notificationId)
                     }
+
+                    ACTION_MEAL_DISMISS -> {
+                        AlarmRingingController.stopRinging(appContext)
+                        NotificationHelper.dismissNotification(appContext, notificationId)
+                    }
                 }
             } finally {
                 pendingResult.finish()
@@ -71,6 +76,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
         const val ACTION_WATER_SNOOZE_10 = "com.example.reminder.ACTION_WATER_SNOOZE_10"
         const val ACTION_MEAL_ALREADY_ATE = "com.example.reminder.ACTION_MEAL_ALREADY_ATE"
         const val ACTION_MEAL_SNOOZE_10 = "com.example.reminder.ACTION_MEAL_SNOOZE_10"
+        const val ACTION_MEAL_DISMISS = "com.example.reminder.ACTION_MEAL_DISMISS"
 
         const val EXTRA_MEAL_ID = "extra_action_meal_id"
         const val EXTRA_MEAL_NAME = "extra_action_meal_name"

@@ -31,8 +31,11 @@ import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.material.icons.filled.WaterDrop
+import com.example.util.BrandCompatibilityHelper
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -118,6 +121,12 @@ fun SettingsScreen(
     var isIgnoringBatteryOpt by remember {
         mutableStateOf(ReminderScheduler.isIgnoringBatteryOptimizations(context))
     }
+    var canFullScreenIntent by remember {
+        mutableStateOf(NotificationHelper.canUseFullScreenIntent(context))
+    }
+    var canDrawOverlays by remember {
+        mutableStateOf(NotificationHelper.canDrawOverlays(context))
+    }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -126,6 +135,8 @@ fun SettingsScreen(
                 hasNotificationPermission = NotificationHelper.hasNotificationPermission(context)
                 canExactAlarm = ReminderScheduler.canScheduleExactAlarms(context)
                 isIgnoringBatteryOpt = ReminderScheduler.isIgnoringBatteryOptimizations(context)
+                canFullScreenIntent = NotificationHelper.canUseFullScreenIntent(context)
+                canDrawOverlays = NotificationHelper.canDrawOverlays(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -585,6 +596,74 @@ fun SettingsScreen(
 
                         HorizontalDivider()
 
+                        // Status & Pintasan Tampilkan di Atas Aplikasi Lain (Overlay)
+                        PermissionShortcutRow(
+                            title = "Tampilkan Alarm di Atas Aplikasi Lain",
+                            subtitle = if (canDrawOverlays) {
+                                "Aktif • Layar & banner alarm makan tetap muncul saat membuka aplikasi lain"
+                            } else {
+                                "Penting • Izinkan agar layar alarm makan selalu muncul penuh walau sedang membuka aplikasi lain (game, video, chat)"
+                            },
+                            isGranted = canDrawOverlays,
+                            buttonLabel = if (canDrawOverlays) "Pengaturan" else "Izinkan",
+                            onClick = {
+                                runCatching {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                        val intent = Intent(
+                                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                            Uri.parse("package:${context.packageName}")
+                                        )
+                                        context.startActivity(intent)
+                                    } else {
+                                        val intent = Intent(
+                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                            Uri.parse("package:${context.packageName}")
+                                        )
+                                        context.startActivity(intent)
+                                    }
+                                }.onFailure {
+                                    runCatching {
+                                        val fallback = Intent(
+                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                            Uri.parse("package:${context.packageName}")
+                                        )
+                                        context.startActivity(fallback)
+                                    }
+                                }
+                            }
+                        )
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            HorizontalDivider()
+                            PermissionShortcutRow(
+                                title = "Tampilan Alarm Penuh di Layar Kunci",
+                                subtitle = if (canFullScreenIntent) {
+                                    "Aktif • Layar alarm makan diizinkan menyala di atas layar kunci"
+                                } else {
+                                    "Dibatasi Android 14+ • Ketuk untuk mengizinkan alarm layar penuh"
+                                },
+                                isGranted = canFullScreenIntent,
+                                buttonLabel = if (canFullScreenIntent) "Pengaturan" else "Izinkan",
+                                onClick = {
+                                    runCatching {
+                                        val intent = Intent(
+                                            Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                                            Uri.parse("package:${context.packageName}")
+                                        )
+                                        context.startActivity(intent)
+                                    }.onFailure {
+                                        val fallback = Intent(
+                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                            Uri.parse("package:${context.packageName}")
+                                        )
+                                        context.startActivity(fallback)
+                                    }
+                                }
+                            )
+                        }
+
+                        HorizontalDivider()
+
                         Text(
                             text = "Uji Notifikasi Minum & Alarm Makan",
                             style = MaterialTheme.typography.labelLarge
@@ -617,6 +696,102 @@ fun SettingsScreen(
                             ) {
                                 Text("Uji Alarm Makan")
                             }
+                        }
+                    }
+                }
+            }
+
+            // 5. Kartu Panduan Kompatibilitas Khusus Merek HP (Xiaomi, Samsung, Oppo, Vivo, Infinix, dll.)
+            item(key = "settings_oem_compatibility_card") {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PhoneAndroid,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(26.dp)
+                            )
+                            Column {
+                                Text(
+                                    text = "Kompatibilitas Perangkat & Merek HP",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    text = BrandCompatibilityHelper.getDeviceDisplayName(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Panduan ${BrandCompatibilityHelper.getBrandNameLabel()}:",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                BrandCompatibilityHelper.getCompatibilityTips().forEachIndexed { index, tip ->
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Text(
+                                            text = "${index + 1}.",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Text(
+                                            text = tip,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                BrandCompatibilityHelper.openOemBackgroundSettings(context)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("open_oem_settings_button"),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SettingsSuggest,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Buka Pengaturan Latar Belakang HP")
                         }
                     }
                 }

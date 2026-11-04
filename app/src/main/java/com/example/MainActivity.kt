@@ -8,14 +8,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Restaurant
@@ -25,6 +30,8 @@ import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,11 +39,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.reminder.AlarmRingingController
 import com.example.ui.MakanMinumUiState
 import com.example.ui.MakanMinumViewModel
 import com.example.ui.screens.HistoryScreen
@@ -78,6 +88,7 @@ enum class MakanMinumTab(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.example.reminder.NotificationHelper.ensureChannelsCreated(this)
         enableEdgeToEdge()
         setContent {
             val viewModel: MakanMinumViewModel = viewModel(factory = MakanMinumViewModel.Factory)
@@ -101,6 +112,7 @@ fun MakanMinumApp(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var currentTab by rememberSaveable { mutableStateOf(MakanMinumTab.BERANDA) }
+    val activeAlarm by AlarmRingingController.activeAlarm.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.snackbarMessage) {
         val msg = uiState.snackbarMessage
@@ -111,6 +123,64 @@ fun MakanMinumApp(
             )
             viewModel.clearSnackbar()
         }
+    }
+
+    if (activeAlarm != null) {
+        val alarm = activeAlarm!!
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissActiveAlarmOnly(alarm) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Alarm,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(36.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Waktunya ${alarm.mealName}! (${alarm.mealTimeFormatted})",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "Alarm jadwal ${alarm.mealName} sedang berbunyi. Jangan lewatkan jam makan Anda agar tubuh tetap sehat dan berenergi.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Button(
+                        onClick = { viewModel.confirmActiveAlarmDone(alarm) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("in_app_alarm_done_button"),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Sudah Makan (Matikan Alarm)")
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.snoozeActiveAlarm10Minutes(alarm) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("in_app_alarm_snooze_button"),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Tunda 10 Menit (Snooze)")
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.dismissActiveAlarmOnly(alarm) },
+                    modifier = Modifier.testTag("in_app_alarm_dismiss_button")
+                ) {
+                    Text("Matikan Alarm Saja")
+                }
+            }
+        )
     }
 
     if (uiState.isLoading) {

@@ -283,6 +283,42 @@ class MakanMinumViewModel(
         }
     }
 
+    fun confirmActiveAlarmDone(info: com.example.reminder.ActiveAlarmInfo) {
+        viewModelScope.launch {
+            val appContext = getApplication<Application>()
+            val now = System.currentTimeMillis()
+            repository.markMealDoneToday(info.mealId, now)
+            com.example.reminder.AlarmRingingController.stopRinging(appContext)
+            NotificationHelper.dismissNotification(appContext, info.notificationId)
+            refreshTimeState()
+            snackbarMessageFlow.value = "Selamat makan! \"${info.mealName}\" tercatat selesai hari ini."
+        }
+    }
+
+    fun snoozeActiveAlarm10Minutes(info: com.example.reminder.ActiveAlarmInfo) {
+        viewModelScope.launch {
+            val appContext = getApplication<Application>()
+            val now = System.currentTimeMillis()
+            ReminderScheduler.scheduleSnoozeMealAlarm(
+                context = appContext,
+                mealId = info.mealId,
+                mealName = info.mealName,
+                delayMinutes = 10,
+                nowMillis = now
+            )
+            com.example.reminder.AlarmRingingController.stopRinging(appContext)
+            NotificationHelper.dismissNotification(appContext, info.notificationId)
+            snackbarMessageFlow.value = "Alarm \"${info.mealName}\" ditunda 10 menit"
+        }
+    }
+
+    fun dismissActiveAlarmOnly(info: com.example.reminder.ActiveAlarmInfo) {
+        val appContext = getApplication<Application>()
+        com.example.reminder.AlarmRingingController.stopRinging(appContext)
+        NotificationHelper.dismissNotification(appContext, info.notificationId)
+        snackbarMessageFlow.value = "Alarm \"${info.mealName}\" dimatikan"
+    }
+
     fun selectHistoryDate(dateStr: String) {
         selectedHistoryDateFlow.value = dateStr
     }

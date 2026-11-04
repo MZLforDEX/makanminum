@@ -7,5 +7,6 @@
     <string name="action_already_ate">Sudah makan</string>
     <string name="action_drink_250">Minum 250 ml</string>
     <string name="action_snooze_10">Tunda 10 menit</string>
+    <string name="action_dismiss_alarm">Matikan</string>
     <string name="medical_disclaimer">Target minum dihitung sebagai perkiraan umum (30–35 ml × kg berat badan) dan bukan merupakan saran medis.</string>
 </resources>
